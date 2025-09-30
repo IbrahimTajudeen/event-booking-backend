@@ -14,6 +14,7 @@ export class BookingsService {
 
   async create(createBookingDto: CreateBookingDto) {
     this.logger.log('Creating a new booking');
+    
     const booking = this.bookingsRepository.create({
       tickets: createBookingDto.tickets,
       status: 'pending',

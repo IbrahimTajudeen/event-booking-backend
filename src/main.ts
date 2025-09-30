@@ -19,10 +19,10 @@ async function bootstrap() {
   const exists = await userRepo.findOne({ where: { email: 'admin@example.com', role: UserRole.ADMIN } });
   if (!exists) {
     const admin = userRepo.create({
-      email: 'admin@example.com',
+      email: 'superadmin@super.com',
       password: await bcrypt.hash('admin123', 10),
-      name: 'NexoCode',
-      role: UserRole.ADMIN,
+      name: 'Super NexoCode',
+      role: UserRole.SUPERADMIN,
       status: Status.ACTIVE
     });
     await userRepo.save(admin);

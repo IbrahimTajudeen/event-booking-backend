@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, UnauthorizedException } from '@nestjs/common';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -46,6 +46,30 @@ export class AdminService {
     });
     return await this.findOne(id);
   }
+  
+  
+
+  async userToAdmin(id: number) : Promise<string> {
+    const usr = await this.findOne(id);
+    if(!usr || usr?.role as UserRole === UserRole.ADMIN)
+      throw new NotFoundException('User not found or user is already an admin')
+
+    await this.userRepository.update({ id: id }, { role: UserRole.ADMIN });
+    return `User: ${usr.name} is now an admin`;
+  }
+
+  async adminToUser(id: number, user: any) : Promise<string> {
+    const usr = await this.findOne(id);
+    if(!usr || usr?.role as UserRole === UserRole.ADMIN)
+      throw new NotFoundException('User not found or user is already an admin')
+    
+    if(usr?.id == user.userId)
+      throw new UnauthorizedException('Can not revoke self from admin');
+
+    await this.userRepository.update({ id: id }, { role: UserRole.USER });
+    return `User: ${usr.name} has been revoke admin rights`;
+  }
+
 
   async remove(id: number) : Promise<string> {
     await this.userRepository.delete({ id: id , role: UserRole.ADMIN });
