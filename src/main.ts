@@ -16,7 +16,7 @@ async function bootstrap() {
 
   const userRepo = app.get(getRepositoryToken(User))
 
-  const exists = await userRepo.findOne({ where: { email: 'admin@example.com', role: UserRole.ADMIN } });
+  const exists = await userRepo.findOne({ where: { email: 'superadmin@super.com', role: UserRole.SUPERADMIN } });
   if (!exists) {
     const admin = userRepo.create({
       email: 'superadmin@super.com',
