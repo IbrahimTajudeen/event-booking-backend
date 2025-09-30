@@ -15,10 +15,6 @@ import { ApiTags, ApiResponse } from '@nestjs/swagger';
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
-  @Post('login')
-  login(@Body() loginAdminDto: LoginAdminDto) {
-    return this.adminService.login(loginAdminDto);
-  }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)

@@ -32,33 +32,6 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @ApiOperation({
-    summary: 'Create User',
-    description: 'Allows new users to register in the system.',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'User successfully created',
-    type: User,
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Bad Request',
-  })
-  @ApiResponse({
-    status: 500,
-    description: 'Internal Server Error',
-    type: InternalServerErrorException,
-  })
-  @Post('signin')
-  async createUser(@Body() createUserDto: CreateUserDto, @Req() res : Response) 
-  {
-    const newUser = await this.usersService.create(createUserDto)
-    if(newUser)
-      return res.status(HttpStatus.OK).json({ message: 'User successfully created', data: newUser })
-    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to create user', data: null })
-  }
-
-  @ApiOperation({
     summary: 'Get All Users (Admin)',
     description: 'Allows admin and users to fetch all users in the system.',
   })
