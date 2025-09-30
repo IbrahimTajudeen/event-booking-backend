@@ -1,53 +1,34 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Logger } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
-import { RolesGuard } from 'src/common/guards/role.guard';
-import { JwtAuthGuard } from 'src/common/guards/auth.guard';
-import { Roles } from 'src/common/decorator/role.decorator';
-import { UserRole } from 'src/common/types/user.type';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+  
   constructor(private readonly authService: AuthService) {}
 
-  @Post('resgister')
-  create(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.create(createAuthDto);
-  }
-
+  @ApiOperation({
+      summary: 'User Login',
+      description: 'Allows users to login and receive a JWT token.',
+    })
+    @ApiResponse({
+      status: 200,
+      description: 'User successfully logged in',
+      type: String,
+    })
+    @ApiResponse({
+      status: 401,
+      description: 'Invalid credentials',
+    })
   @Post('login')
-  login(@Body() loginAuthDto: LoginAuthDto) {
-    return this.authService.login(loginAuthDto);
-  }
-
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @Get()
-  findAll() {
-    return this.authService.findAll();
-  }
-
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
-  }
-  
-  @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-    return this.authService.update(+id, updateAuthDto);
-  }
-
-  @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
+  async login(@Body() loginAuthDto: LoginAuthDto) {
+    this.logger.log(`Login Credentials ${loginAuthDto}`)
+    const token_obj = await this.authService.login(loginAuthDto);
+    this.logger.log(`Access token: ${token_obj.access_token}`);
+    return token_obj;
   }
 }

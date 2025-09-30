@@ -34,24 +34,6 @@ export class UsersService {
       }
   }
   
-  async login(LoginUserDto: LoginUserDto) : Promise<{ status: string, access_token: string }> {
-    const user = await this.userRepository.findOneBy({ email: LoginUserDto.email, role: UserRole.USER });
-    //verify password
-    const passwordValid = await bcrypt.compare(LoginUserDto.password, user?.password ?? '');
-    if(!user && !passwordValid)
-    {
-      this.logger.warn('Invalid login credentials')
-      throw new NotFoundException('Invalid login credentials')
-    }
-
-    const payload = { email: user?.email, sub: user?.id, role: user?.role };
-    const token = await this.jwtService.signAsync(payload);
-    return {
-      status: "OK",
-      access_token: token
-    }
-  }
-  
   async findAll(): Promise<User[]> {
     return await this.userRepository.find({ where: { role: UserRole.USER}});
   }
@@ -60,8 +42,8 @@ export class UsersService {
     return await this.userRepository.findOneBy({ id: id , role: UserRole.USER });
   }
 
-  async myProfile(user: User) : Promise<User | null> {
-    return await this.userRepository.findOneBy({ id: user.id });
+  async myProfile(user: any) : Promise<User | null> {
+    return await this.userRepository.findOneBy({ id: user.userId, role: user.role });
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) : Promise<User | null> {

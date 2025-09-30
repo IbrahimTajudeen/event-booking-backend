@@ -1,6 +1,11 @@
 /* eslint-disable prettier/prettier */
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { User } from 'src/common/entities/user.entity';
+import * as bcrypt from 'bcrypt';
+import { UserRole } from './common/types/user.type';
+import { Status } from './common/types/status.type';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as dotenv from 'dotenv';
 
@@ -8,6 +13,21 @@ dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const userRepo = app.get(getRepositoryToken(User))
+
+  const exists = await userRepo.findOne({ where: { email: 'admin@example.com', role: UserRole.ADMIN } });
+  if (!exists) {
+    const admin = userRepo.create({
+      email: 'admin@example.com',
+      password: await bcrypt.hash('admin123', 10),
+      name: 'NexoCode',
+      role: UserRole.ADMIN,
+      status: Status.ACTIVE
+    });
+    await userRepo.save(admin);
+    console.log('✅ Admin seeded');
+  }
 
   // Configure Swagger
   const config = new DocumentBuilder()

@@ -9,7 +9,8 @@ import {
   Query, 
   Param, Delete, UseGuards, 
   UnauthorizedException, 
-  InternalServerErrorException } from '@nestjs/common';
+  InternalServerErrorException, Logger, Req, 
+  HttpStatus} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -21,29 +22,14 @@ import { UserRole } from 'src/common/types/user.type';
 import { User } from 'src/common/entities/user.entity'
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/common/decorator/current-user.decorator';
+import type { Response } from 'express';
 
 @ApiTags('Users')
 @ApiBearerAuth('access-token')
 @Controller('users')
 export class UsersController {
+  private readonly logger = new Logger(UsersController.name)
   constructor(private readonly usersService: UsersService) {}
-  @ApiOperation({
-    summary: 'User Login',
-    description: 'Allows users to login and receive a JWT token.',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'User successfully logged in',
-    type: String,
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Invalid credentials',
-  })
-  @Post('login')
-  login(@Body() loginUserDto: LoginUserDto) {
-    return this.usersService.login(loginUserDto);
-  }
 
   @ApiOperation({
     summary: 'Create User',
@@ -64,17 +50,16 @@ export class UsersController {
     type: InternalServerErrorException,
   })
   @Post('signin')
-  async createUser(@Body() createUserDto: CreateUserDto) : Promise<{ message: string, data: User | null }> 
+  async createUser(@Body() createUserDto: CreateUserDto, @Req() res : Response) 
   {
     const newUser = await this.usersService.create(createUserDto)
     if(newUser)
-      return ({ message: 'User successfully created', data: newUser })
-
-    return ({ message: 'Failed to create user', data: null })
+      return res.status(HttpStatus.OK).json({ message: 'User successfully created', data: newUser })
+    return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Failed to create user', data: null })
   }
 
   @ApiOperation({
-    summary: 'Get All Users (Admin and User)',
+    summary: 'Get All Users (Admin)',
     description: 'Allows admin and users to fetch all users in the system.',
   })
   @ApiResponse({
@@ -95,7 +80,7 @@ export class UsersController {
   }
 
   @ApiOperation({
-    summary: 'Get User Profile (Admin and User)',
+    summary: 'Get User Profile (Admin)',
     description: 'Allows admin and users to fetch a user profile in the system using it\'s Id.',
   })
   @ApiResponse({
@@ -116,9 +101,10 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER)  
+  @Roles(UserRole.USER, UserRole.ADMIN)  
   @Get('my-profile')
   myProfile(@CurrentUser() user: any) {
+    console.log(user)
     return this.usersService.myProfile(user);
   }
 

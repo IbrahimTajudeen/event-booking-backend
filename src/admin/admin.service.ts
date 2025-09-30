@@ -30,24 +30,6 @@ export class AdminService {
     return await this.userRepository.save(admin);
   }
 
-   async login(loginAdminDto: LoginAdminDto) : Promise<{ status: string, access_token: string }> {
-    const admin = await this.userRepository.findOneBy({ email: loginAdminDto.email, role: UserRole.ADMIN });
-    //verify password
-    const passwordValid = await bcrypt.compare(loginAdminDto.password, admin?.password ?? '');
-    if(!admin && !passwordValid)
-    {
-      this.logger.warn('Invalid login credentials')
-      throw new NotFoundException('Invalid login credentials')
-    }
-
-    const payload = { email: admin?.email, sub: admin?.id, role: admin?.role };
-    const token = await this.jwtService.signAsync(payload);
-    return {
-      status: "OK",
-      access_token: token
-    }
-  }
-
   async findAll(): Promise<User[]> {
     return await this.userRepository.find({ where: { role: UserRole.ADMIN}});
   }
