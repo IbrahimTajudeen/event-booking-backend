@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { NestFactory } from '@nestjs/core';
+import { Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from 'src/common/entities/user.entity';
@@ -10,9 +11,15 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
+const logger = new Logger('Bootstrap Entry Point');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.enableCors({
+    origin: 'http://localhost:3200', // allowing front end
+    credentials: true,
+  });
 
   const userRepo = app.get(getRepositoryToken(User))
 
@@ -48,6 +55,6 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3100);
 }
 bootstrap();

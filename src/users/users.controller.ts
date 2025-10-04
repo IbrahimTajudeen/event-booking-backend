@@ -116,7 +116,7 @@ export class UsersController {
     type: UnauthorizedException,
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.USER, UserRole.ADMIN)  
+  @Roles(UserRole.USER, UserRole.ADMIN, UserRole.SUPERADMIN)  
   @Get('my-profile')
   myProfile(@CurrentUser() user: any) {
     console.log(user)
