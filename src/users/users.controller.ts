@@ -74,7 +74,7 @@ export class UsersController {
     type: UnauthorizedException,
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.SUPERADMIN)
   @Get('get-users')
   getUsers(@Query('search') search: any) {
     return this.usersService.findAll();
